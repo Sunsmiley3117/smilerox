@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import { User as SupabaseUser, AuthError } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -16,7 +16,6 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   register: (firstName: string, lastName: string, email: string, phone: string, password: string) => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
@@ -118,7 +117,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    // Clear current user before login
     setUser(null);
     
     try {
@@ -134,32 +132,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const loginWithGoogle = async () => {
-    // Clear current user before Google login
-    setUser(null);
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      });
-
-      if (error) throw error;
-    } catch (error: any) {
-      console.error('Google login error:', error);
-      throw new Error(error.message || 'Google login failed');
     }
   };
 
@@ -183,39 +158,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   ) => {
     setIsLoading(true);
     try {
-      // Check if email already exists
-      const { data: existingUsers, error: checkError } = await supabase
-        .from('users')
-        .select('email')
-        .eq('email', email);
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        throw checkError;
-      }
-
-      if (existingUsers && existingUsers.length > 0) {
-        throw new Error('This email address is already registered. Please use a different email or try logging in.');
-      }
-
-      // Check if phone already exists
-      const { data: existingPhones, error: phoneCheckError } = await supabase
-        .from('users')
-        .select('phone')
-        .eq('phone', phone);
-
-      if (phoneCheckError && phoneCheckError.code !== 'PGRST116') {
-        throw phoneCheckError;
-      }
-
-      if (existingPhones && existingPhones.length > 0) {
-        throw new Error('This phone number is already registered. Please use a different phone number.');
-      }
-
       // First, sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: undefined, // Disable email confirmation
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -239,8 +187,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Don't throw here as the auth user was created successfully
+          // If profile creation fails, it might be due to duplicate email
+          if (profileError.code === '23505') {
+            throw new Error('This email address is already registered. Please use a different email or try logging in.');
+          }
+          throw profileError;
         }
 
         // Send welcome email (you can implement this later)
@@ -248,7 +199,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      throw new Error(error.message || 'Registration failed');
+      if (error.message.includes('already registered')) {
+        throw error;
+      } else if (error.message.includes('email')) {
+        throw new Error('This email address is already registered. Please use a different email or try logging in.');
+      } else {
+        throw new Error(error.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -313,7 +270,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       isAuthenticated: !!user,
       isLoading,
       login,
-      loginWithGoogle,
       logout,
       register,
       updateUser,

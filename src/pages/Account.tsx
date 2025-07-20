@@ -180,7 +180,6 @@ const Account: React.FC = () => {
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
     { id: 'orders', name: 'Orders', icon: Package },
-    { id: 'track-order', name: 'Track Order', icon: Truck },
     { id: 'addresses', name: 'Addresses', icon: MapPin },
     { id: 'wishlist', name: 'Wishlist', icon: Heart },
     { id: 'settings', name: 'Settings', icon: Settings }
@@ -335,9 +334,9 @@ const Account: React.FC = () => {
                           </div>
                           <div className="flex justify-between items-center pt-4 border-t">
                             <span className="font-semibold">Total: ₹{Number(order.total).toLocaleString()}</span>
-                            <Link to="/track-order" className="text-blue-600 hover:text-blue-700 text-sm">
-                              Track Order
-                            </Link>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -359,45 +358,6 @@ const Account: React.FC = () => {
               )}
 
               {/* Track Order Tab */}
-              {activeTab === 'track-order' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Track Your Order</h2>
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <form className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Order ID
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter your order ID"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          placeholder="Enter your email"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        Track Order
-                      </button>
-                    </form>
-                    <div className="mt-6 text-center">
-                      <p className="text-gray-600 mb-2">Or visit our dedicated tracking page</p>
-                      <Link to="/track-order" className="text-blue-600 hover:text-blue-700 font-medium">
-                        Go to Track Order Page
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Addresses Tab */}
               {activeTab === 'addresses' && (
                 <div>
@@ -624,46 +584,6 @@ const Account: React.FC = () => {
                         </div>
                       )
                     )}
-                  </div>
-                </div>
-              )}
-
-              {/* Track Order Tab */}
-              {activeTab === 'track-order' && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Track Your Order</h2>
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <form className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Order ID
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter your order ID"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          placeholder="Enter your email"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        Track Order
-                      </button>
-                    </form>
-                    <div className="mt-6 text-center">
-                      <p className="text-gray-600 mb-2">Or visit our dedicated tracking page</p>
-                      <Link to="/track-order" className="text-blue-600 hover:text-blue-700 font-medium">
-                        Go to Track Order Page
-                      </Link>
-                      </div>
                   </div>
                 </div>
               )}

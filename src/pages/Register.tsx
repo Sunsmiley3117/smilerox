@@ -129,11 +129,14 @@ const Register: React.FC = () => {
         formData.phone,
         formData.password
       );
-      navigate('/login', { 
-        state: { 
-          message: 'Registration successful! Please login with your credentials.' 
-        }
-      });
+      // Small delay to ensure registration is complete
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { 
+            message: 'Registration successful! Please login with your credentials.' 
+          }
+        });
+      }, 500);
     } catch (error: any) {
       console.error('Registration error:', error);
       if (error.message.includes('email')) {

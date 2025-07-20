@@ -71,21 +71,31 @@ const AdminDashboard: React.FC = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (ordersError) throw ordersError;
+      if (ordersError) {
+        console.error('Orders fetch error:', ordersError);
+        // Continue with empty orders if there's an error
+        setRecentOrders([]);
+      } else {
+        setRecentOrders(orders || []);
+      }
 
       // Fetch all orders for stats
       const { data: allOrders, error: allOrdersError } = await supabase
         .from('orders')
         .select('total, status');
 
-      if (allOrdersError) throw allOrdersError;
+      if (allOrdersError) {
+        console.error('All orders fetch error:', allOrdersError);
+      }
 
       // Fetch users count
       const { count: usersCount, error: usersError } = await supabase
         .from('users')
         .select('*', { count: 'exact', head: true });
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('Users count error:', usersError);
+      }
 
       // Calculate stats
       const totalRevenue = allOrders?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
@@ -98,9 +108,16 @@ const AdminDashboard: React.FC = () => {
         pendingOrders
       });
 
-      setRecentOrders(orders || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set default values on error
+      setStats({
+        totalOrders: 0,
+        totalRevenue: 0,
+        totalUsers: 0,
+        pendingOrders: 0
+      });
+      setRecentOrders([]);
     } finally {
       setIsLoading(false);
     }

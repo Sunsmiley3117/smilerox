@@ -123,6 +123,9 @@ const Header: React.FC = () => {
                       <>
                         <Link to="/account" onClick={scrollToTop} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Account</Link>
                         <Link to="/account" onClick={() => { scrollToTop(); setActiveTab('orders'); }} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
+                        {(user?.email === 'admin@falconlifestyle.com' || user?.email?.includes('admin')) && (
+                          <Link to="/admin" onClick={scrollToTop} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin Panel</Link>
+                        )}
                         <button onClick={logout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
                       </>
                     ) : (
